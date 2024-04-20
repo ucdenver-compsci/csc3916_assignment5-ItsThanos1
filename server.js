@@ -164,11 +164,19 @@ router.route('/testcollection')
         Movie.aggregate([
           {
             $lookup: {
-              from: "reviews",
-              localField: "_id",
-              foreignField: "movieId",
-              as: "reviews"
+              from: 'reviews',
+              localField: '_id',
+              foreignField: 'movieId',
+              as: 'movieReviews'
             }
+          },
+          {
+            $addFields: {
+              avgRating: { $avg: '$movieReviews.rating' }
+            }
+          },
+          {
+            $sort: { avgRating: -1 }
           }
         ]).exec()
           .then(movies => {
@@ -177,7 +185,7 @@ router.route('/testcollection')
           .catch(err => {
             res.status(500).json({success: false, message: "Error fetching movies with reviews.", error: err.message});
           });
-      } else {
+      } else {  
         Movie.find({})
           .exec()
           .then(movies => {
