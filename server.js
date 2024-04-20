@@ -201,7 +201,8 @@ router.route('/testcollection')
             title: req.body.title,
             releaseDate: req.body.releaseDate,
             genre: req.body.genre,
-            actors: req.body.actors
+            actors: req.body.actors,
+            imageUrl: req.body.imageUrl
         });
     
         newMovie.save()
