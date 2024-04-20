@@ -237,6 +237,37 @@ router.route('/testcollection')
         res.status(405).send({ message: 'HTTP method not supported.' });
     });
 
+    router.route('/movies/:id')
+  .get(authJwtController.isAuthenticated, (req, res) => {
+    const movieId = new mongoose.Types.ObjectId(req.params.id);
+
+    Movie.aggregate([
+      {
+        $match: { _id: movieId }
+      },
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'movieId',
+          as: 'movieReviews'
+        }
+      },
+      {
+        $addFields: {
+          avgRating: { $avg: '$movieReviews.rating' }
+        }
+      }
+    ]).exec()
+      .then(movie => {
+        if (!movie || movie.length === 0) {
+          return res.status(404).json({ success: false, message: "Movie not found." });
+        }
+        res.json({ success: true, movie: movie[0] });
+      })
+      .catch(err => res.status(500).json({ success: false, message: "Error fetching movie.", error: err.message }));
+  });
+
     
 app.use('/', router);
 app.listen(process.env.PORT || 8080);
