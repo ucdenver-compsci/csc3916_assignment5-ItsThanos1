@@ -250,12 +250,12 @@ router.route('/testcollection')
           from: 'reviews',
           localField: '_id',
           foreignField: 'movieId',
-          as: 'reviews'
+          as: 'movieReviews'
         }
       },
       {
         $addFields: {
-          avgRating:  { $avg: '$reviews.rating' }
+          avgRating: { $avg: '$movieReviews.rating' }
         }
       }
     ]).exec()
