@@ -238,35 +238,35 @@ router.route('/testcollection')
     });
 
     router.route('/movies/:id')
-  .get(authJwtController.isAuthenticated, (req, res) => {
-    const movieId = new mongoose.Types.ObjectId(req.params.id);
-
-    Movie.aggregate([
-      {
-        $match: { _id: movieId }
-      },
-      {
-        $lookup: {
-          from: 'reviews',
-          localField: '_id',
-          foreignField: 'movieId',
-          as: 'reviews' // Change this to 'reviews' instead of 'movieReviews'
+    .get(authJwtController.isAuthenticated, (req, res) => {
+      const movieId = req.params.id;
+  
+      Movie.aggregate([
+        {
+          $match: { _id: mongoose.Types.ObjectId(movieId) }
+        },
+        {
+          $lookup: {
+            from: 'reviews',
+            localField: '_id',
+            foreignField: 'movieId',
+            as: 'reviews'
+          }
+        },
+        {
+          $addFields: {
+            avgRating: { $avg: '$reviews.rating' }
+          }
         }
-      },
-      {
-        $addFields: {
-          avgRating: { $avg: '$reviews.rating' } // Update this to '$reviews.rating'
-        }
-      }
-    ]).exec()
-      .then(movie => {
-        if (!movie || movie.length === 0) {
-          return res.status(404).json({ success: false, message: "Movie not found." });
-        }
-        res.json({ success: true, movie: movie[0] });
-      })
-      .catch(err => res.status(500).json({ success: false, message: "Error fetching movie.", error: err.message }));
-  });
+      ]).exec()
+        .then(movie => {
+          if (!movie || movie.length === 0) {
+            return res.status(404).json({ success: false, message: "Movie not found." });
+          }
+          res.json({ success: true, movie: movie[0] });
+        })
+        .catch(err => res.status(500).json({ success: false, message: "Error fetching movie.", error: err.message }));
+    });
 
     
 app.use('/', router);
